@@ -13,6 +13,7 @@ namespace LiveCaptionsTranslator
         private static Caption? caption = null;
         private static Setting? setting = null;
         private static readonly Queue<string> pendingTextQueue = new();
+        private static readonly CaptionLogger logger = CaptionLogger.GetInstance();
 
         public static AutomationElement? Window
         {
@@ -22,6 +23,11 @@ namespace LiveCaptionsTranslator
         public static Caption? Caption => caption;
         public static Setting? Setting => setting;
         public static bool LogOnlyFlag { get; set; } = false;
+        public static bool JsonLoggingEnabled
+        {
+            get => logger.IsLogging;
+            set => logger.IsLogging = value;
+        }
         
         public static event Action? TranslationLogged;
 
@@ -169,6 +175,12 @@ namespace LiveCaptionsTranslator
                 {
                     var originalSnapshot = pendingTextQueue.Dequeue();
 
+                    // Log the caption
+                    if (JsonLoggingEnabled)
+                    {
+                        logger.LogCaption(originalSnapshot);
+                    }
+
                     if (LogOnlyFlag)
                     {
                         bool isOverwrite = await IsOverwrite(originalSnapshot);
@@ -192,12 +204,16 @@ namespace LiveCaptionsTranslator
                         Caption.DisplayTranslatedCaption = 
                             TextUtil.ShortenDisplaySentence(Caption.TranslatedCaption, TextUtil.VERYLONG_THRESHOLD);
                         
+                        // Log the translation
+                        if (JsonLoggingEnabled)
+                        {
+                            logger.LogCaption(originalSnapshot, Caption.TranslatedCaption);
+                        }
+
                         var match = RegexPatterns.NoticePrefixAndTranslation().Match(Caption.TranslatedCaption);
                         string noticePrefix = match.Groups[1].Value;
                         string translatedText = match.Groups[2].Value;
                         Caption.OverlayTranslatedCaption = noticePrefix + Caption.OverlayPreviousTranslation + translatedText;
-                        // Caption.OverlayTranslatedCaption = 
-                        //     TextUtil.ShortenDisplaySentence(Caption.OverlayTranslatedCaption, TextUtil.VERYLONG_THRESHOLD);
                     }
 
                     // If the original sentence is a complete sentence, pause for better visual experience.

@@ -56,6 +56,14 @@
                                                  Filled=False}"
                             ToolTip="Pause Translation (Log Only)" />
                         <ui:Button
+                            x:Name="JsonLoggingButton"
+                            Margin="0,0,5,0"
+                            Appearance="Transparent"
+                            Click="JsonLoggingButton_Click"
+                            Icon="{ui:SymbolIcon Record16,
+                                                 Filled=False}"
+                            ToolTip="Toggle JSON Logging" />
+                        <ui:Button
                             x:Name="OverlayModeButton"
                             Margin="0,0,5,0"
                             Appearance="Transparent"
@@ -120,5 +128,6 @@
             x:Name="DialogHostContainer"
             MinHeight="167"
             Visibility="Collapsed" />
+        <ui:SnackbarPresenter x:Name="RootSnackbar" />
     </Grid>
 </ui:FluentWindow>

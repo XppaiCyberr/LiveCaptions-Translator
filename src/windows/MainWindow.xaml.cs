@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
 using LiveCaptionsTranslator.utils;
@@ -81,15 +82,27 @@ namespace LiveCaptionsTranslator
             var button = sender as Button;
             var symbolIcon = button?.Icon as SymbolIcon;
 
-            if (Translator.LogOnlyFlag)
+            Translator.LogOnlyFlag = !Translator.LogOnlyFlag;
+            symbolIcon.Filled = Translator.LogOnlyFlag;
+        }
+
+        private void JsonLoggingButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var symbolIcon = button?.Icon as SymbolIcon;
+
+            Translator.JsonLoggingEnabled = !Translator.JsonLoggingEnabled;
+            symbolIcon.Filled = Translator.JsonLoggingEnabled;
+
+            if (Translator.JsonLoggingEnabled)
             {
-                Translator.LogOnlyFlag = false;
-                symbolIcon.Filled = false;
+                var logger = CaptionLogger.GetInstance();
+                var logPath = logger.GetCurrentLogPath();
+                ShowNotification("JSON Logging Started", $"Saving to: {logPath}");
             }
             else
             {
-                Translator.LogOnlyFlag = true;
-                symbolIcon.Filled = true;
+                ShowNotification("JSON Logging Stopped", "Caption logging has been stopped");
             }
         }
 
@@ -142,6 +155,26 @@ namespace LiveCaptionsTranslator
             }
             if (IsAutoHeight && maxHeight > 0 && Height > maxHeight)
                 Height = maxHeight;
+        }
+
+        private void ShowNotification(string title, string message)
+        {
+            // Create a simple message for notification
+            // Since Snackbar implementation is causing issues, we'll comment this out for now
+            // and just log to console
+            Console.WriteLine($"{title}: {message}");
+            
+            // TODO: Fix notification when building with correct WPF UI library version
+            /*
+            var notificationIcon = new SymbolIcon { Symbol = SymbolRegular.Info16 };
+            RootSnackbar.Show(
+                title,
+                message,
+                ControlAppearance.Secondary,
+                notificationIcon,
+                TimeSpan.FromSeconds(4)
+            );
+            */
         }
     }
 }
